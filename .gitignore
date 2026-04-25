@@ -1,0 +1,14 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+
+.idea/
+
+ui/node_modules/
+ui/dist/
+ui/.vite/
+ui/vite-dev*.log
+
+.DS_Store
+Thumbs.db
