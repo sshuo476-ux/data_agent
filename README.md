@@ -240,3 +240,248 @@ http://127.0.0.1:8000
 - 前后端联调
 
 后续可以继续扩展下单、购物车、用户登录、订单管理和后台管理等功能。
+
+---
+
+# AiMenu Smart Ordering System
+
+AiMenu is an intelligent restaurant ordering system built with FastAPI, Vue 3, and large language model capabilities. It supports AI chat, dish recommendations, menu browsing, and delivery range checks. The project is suitable for smart ordering demos, restaurant assistant prototypes, and LLM application practice.
+
+## Features
+
+- AI chat: Users can ask about opening hours, restaurant information, dish recommendations, and general questions.
+- Dish recommendations: The assistant analyzes user preferences and returns suitable dish suggestions.
+- Menu display: The backend reads menu items from MySQL and the frontend displays price, category, spice level, description, vegetarian status, and other details.
+- Delivery range check: The backend uses Amap API to geocode addresses and calculate whether an address is within the delivery radius.
+- Frontend-backend separation: The backend provides REST APIs, and the frontend calls them through Axios.
+
+## Tech Stack
+
+Backend:
+
+- Python
+- FastAPI
+- Uvicorn
+- LangChain
+- DashScope / Qwen-compatible API
+- MySQL
+- Amap API
+- Pinecone
+
+Frontend:
+
+- Vue 3
+- Vite
+- Element Plus
+- Axios
+
+## Project Structure
+
+```text
+smart_diancan/
+├── agent/              # Assistant and intent analysis logic
+├── api/                # FastAPI API entry
+├── prompt/             # Prompt files
+├── service/            # Business service layer
+├── tools/              # Database, map, LLM, and vector database tools
+├── ui/                 # Vue frontend project
+├── .env.example        # Example environment variables
+├── requirements.txt    # Python dependencies
+└── run.py              # Backend startup entry
+```
+
+## Setup
+
+### 1. Clone The Repository
+
+```bash
+git clone https://github.com/sshuo476-ux/data_agent.git
+cd data_agent
+```
+
+### 2. Configure Backend Environment
+
+Create and activate a virtual environment:
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Copy the example environment file:
+
+```bash
+copy .env.example .env
+```
+
+Then fill in your real configuration in `.env`:
+
+```env
+AMAP_API_KEY=your_amap_api_key
+MERCHANT_LONGITUDE=114.401934
+MERCHANT_LATITUDE=30.465295
+DELIVERY_RADIUS=2500
+DEFAULT_PATH_MODE=2
+
+DASHSCOPE_API_KEY=your_dashscope_api_key
+DASHSCOPE_API_BASE=https://dashscope.aliyuncs.com/compatible-mode/v1/
+DASHSCOPE_MODEL_NAME=qwen2.5-14b-instruct
+
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER_NAME=root
+MYSQL_USER_PASSWORD=your_mysql_password
+MYSQL_DB_NAME=menu
+```
+
+Do not commit `.env` to GitHub because it contains secrets and database credentials.
+
+### 3. Configure The Database
+
+The project reads menu data from the `menu_items` table in the MySQL database named `menu`. The table should include these fields:
+
+```text
+id, dish_name, price, description, category,
+spice_level, flavor, main_ingredients, cooking_method,
+is_vegetarian, allergens, is_available
+```
+
+Only dishes with `is_available = 1` are displayed on the frontend.
+
+## Run The Project
+
+### Start The Backend
+
+Run this command in the project root:
+
+```bash
+python run.py
+```
+
+The backend runs at:
+
+```text
+http://127.0.0.1:8000
+```
+
+API docs:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Health check:
+
+```text
+http://127.0.0.1:8000/healthy
+```
+
+### Start The Frontend
+
+```bash
+cd ui
+npm install
+npm run dev
+```
+
+The frontend runs at:
+
+```text
+http://127.0.0.1:3000
+```
+
+In development, Vite proxies `/api` requests to `http://127.0.0.1:8000`.
+
+## Main APIs
+
+### Health Check
+
+```http
+GET /healthy
+GET /health
+```
+
+### Menu List
+
+```http
+GET /menu/list
+```
+
+Returns the list of available dishes.
+
+### AI Chat
+
+```http
+POST /chat
+Content-Type: application/json
+
+{
+  "query": "What time do you open?"
+}
+```
+
+### Delivery Range Check
+
+```http
+POST /delivery
+Content-Type: application/json
+
+{
+  "address": "Wuhan University, Hongshan District, Wuhan",
+  "travel_mode": "2"
+}
+```
+
+`travel_mode` options:
+
+- `1`: walking
+- `2`: electric bike / cycling
+- `3`: driving
+
+## Build The Frontend
+
+```bash
+cd ui
+npm run build
+```
+
+The build output is generated in `ui/dist`, which is ignored by `.gitignore`.
+
+## Security Notes
+
+- Do not commit `.env`, API keys, database passwords, or personal access tokens.
+- If a secret has been exposed, revoke it immediately and generate a new one.
+- This repository only includes `.env.example`; real configuration should be created locally.
+
+## FAQ
+
+### 1. Delivery API Returns `RESULTS_ARE_EMPTY`
+
+This usually means Amap cannot parse the input address, or the address is not in the same region as the merchant coordinates. Try using a more complete address, including province, city, and district.
+
+### 2. Frontend Cannot Reach The Backend
+
+Make sure the backend is running at:
+
+```text
+http://127.0.0.1:8000
+```
+
+Also check the proxy settings in `ui/vite.config.js`.
+
+### 3. Menu List Is Empty
+
+Make sure MySQL is running, `.env` contains the correct database settings, and the `menu_items` table has records where `is_available = 1`.
+
+## Project Status
+
+The project currently implements the core smart ordering workflow:
+
+- Menu list display
+- AI chat
+- Dish recommendations
+- Delivery range check
+- Frontend-backend integration
+
+Future improvements may include ordering, cart management, user login, order management, and an admin dashboard.
